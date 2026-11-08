@@ -61,8 +61,8 @@ Con el backend en ejecución, desde la raíz del proyecto:
 
 ```powershell
 cd frontend
-pnpm install
-pnpm start
+npm install
+npm start
 ```
 
 Abrir http://localhost:4200.
