@@ -1,0 +1,32 @@
+@if (product(); as product) {
+  <div class="page-header">
+    <h1>{{ product.name }}</h1>
+    <div class="form-actions">
+      <a mat-stroked-button [routerLink]="['/products', product.id, 'edit']">Editar</a>
+      <a mat-flat-button routerLink="/transactions/new" [queryParams]="{ productId: product.id }">
+        Registrar transacción
+      </a>
+    </div>
+  </div>
+
+  <mat-card class="product-card">
+    <mat-card-content>
+      <div class="product-summary">
+        <img [src]="product.imageUrl" [alt]="product.name" />
+        <dl>
+          <dt>Categoría</dt>
+          <dd>{{ product.category }}</dd>
+          <dt>Descripción</dt>
+          <dd>{{ product.description }}</dd>
+          <dt>Precio</dt>
+          <dd>{{ product.price | currency }}</dd>
+          <dt>Stock actual</dt>
+          <dd>{{ product.stock }}</dd>
+        </dl>
+      </div>
+    </mat-card-content>
+  </mat-card>
+
+  <h2>Historial de transacciones</h2>
+  <app-transaction-list [productId]="product.id" />
+}
