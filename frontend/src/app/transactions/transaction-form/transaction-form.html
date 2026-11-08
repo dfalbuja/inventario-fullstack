@@ -1,0 +1,81 @@
+<h1>{{ isEdit() ? 'Editar transacción' : 'Nueva transacción' }}</h1>
+
+<form class="form-grid" [formGroup]="form" (ngSubmit)="save()">
+  <mat-form-field>
+    <mat-label>Producto</mat-label>
+    <mat-select formControlName="productId">
+      @for (product of products(); track product.id) {
+        <mat-option [value]="product.id">{{ product.name }}</mat-option>
+      }
+    </mat-select>
+    @if (selectedProductStock() !== undefined) {
+      <mat-hint>Stock disponible para venta: {{ selectedProductStock() }}</mat-hint>
+    }
+    @if (form.controls.productId.hasError('required')) {
+      <mat-error>El producto es obligatorio.</mat-error>
+    }
+  </mat-form-field>
+
+  <mat-form-field>
+    <mat-label>Tipo</mat-label>
+    <mat-select formControlName="type">
+      @for (type of transactionTypes; track type) {
+        <mat-option [value]="type">{{ typeLabels[type] }}</mat-option>
+      }
+    </mat-select>
+  </mat-form-field>
+
+  <mat-form-field>
+    <mat-label>Fecha</mat-label>
+    <input matInput type="datetime-local" formControlName="transactionDate" />
+    @if (form.controls.transactionDate.hasError('required')) {
+      <mat-error>La fecha es obligatoria.</mat-error>
+    }
+  </mat-form-field>
+
+  <mat-form-field>
+    <mat-label>Cantidad</mat-label>
+    <input matInput type="number" step="1" min="1" formControlName="quantity" />
+    @if (form.controls.quantity.hasError('required')) {
+      <mat-error>La cantidad es obligatoria.</mat-error>
+    }
+    @if (form.controls.quantity.hasError('min') || form.controls.quantity.hasError('pattern')) {
+      <mat-error>La cantidad debe ser un número entero mayor a 0.</mat-error>
+    }
+  </mat-form-field>
+
+  <mat-form-field>
+    <mat-label>Precio unitario</mat-label>
+    <input matInput type="number" step="0.01" min="0.01" formControlName="unitPrice" />
+    @if (form.controls.unitPrice.hasError('required')) {
+      <mat-error>El precio unitario es obligatorio.</mat-error>
+    }
+    @if (form.controls.unitPrice.hasError('min')) {
+      <mat-error>El precio unitario debe ser mayor a 0.</mat-error>
+    }
+  </mat-form-field>
+
+  <mat-form-field>
+    <mat-label>Precio total</mat-label>
+    <input matInput [value]="total() | currency" disabled />
+  </mat-form-field>
+
+  <mat-form-field class="full-width">
+    <mat-label>Detalle</mat-label>
+    <textarea matInput rows="2" formControlName="detail"></textarea>
+    @if (form.controls.detail.hasError('maxlength')) {
+      <mat-error>Máximo 500 caracteres.</mat-error>
+    }
+  </mat-form-field>
+
+  @if (form.hasError('insufficientStock')) {
+    <mat-error class="full-width">
+      Stock insuficiente: solo hay {{ form.getError('insufficientStock').available }} unidades disponibles.
+    </mat-error>
+  }
+
+  <div class="form-actions full-width">
+    <button mat-flat-button type="submit" [disabled]="saving()">Guardar</button>
+    <button mat-button type="button" (click)="cancel()">Cancelar</button>
+  </div>
+</form>

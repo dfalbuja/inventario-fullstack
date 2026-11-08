@@ -1,0 +1,120 @@
+@if (!isHistory()) {
+  <div class="page-header">
+    <h1>Transacciones</h1>
+    <a mat-flat-button routerLink="/transactions/new"><mat-icon>add</mat-icon> Nueva transacción</a>
+  </div>
+}
+
+<form class="filters" [formGroup]="filterForm" (ngSubmit)="applyFilters()">
+  @if (!isHistory()) {
+    <mat-form-field>
+      <mat-label>Producto</mat-label>
+      <mat-select formControlName="productId">
+        <mat-option [value]="null">Todos</mat-option>
+        @for (product of products(); track product.id) {
+          <mat-option [value]="product.id">{{ product.name }}</mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+  }
+
+  <mat-form-field>
+    <mat-label>Tipo</mat-label>
+    <mat-select formControlName="type">
+      <mat-option [value]="null">Todos</mat-option>
+      @for (type of transactionTypes; track type) {
+        <mat-option [value]="type">{{ typeLabels[type] }}</mat-option>
+      }
+    </mat-select>
+  </mat-form-field>
+
+  <mat-form-field>
+    <mat-label>Desde</mat-label>
+    <input matInput type="date" formControlName="dateFrom" />
+  </mat-form-field>
+
+  <mat-form-field>
+    <mat-label>Hasta</mat-label>
+    <input matInput type="date" formControlName="dateTo" />
+  </mat-form-field>
+
+  <button mat-stroked-button type="submit"><mat-icon>search</mat-icon> Buscar</button>
+  <button mat-button type="button" (click)="clearFilters()">Limpiar</button>
+</form>
+
+@if (activeFilters().length) {
+  <mat-chip-set class="chips">
+    @for (filter of activeFilters(); track filter.key) {
+      <mat-chip (removed)="removeFilter(filter.key)">
+        {{ filter.label }}
+        <button matChipRemove [attr.aria-label]="'Quitar ' + filter.label">
+          <mat-icon>cancel</mat-icon>
+        </button>
+      </mat-chip>
+    }
+  </mat-chip-set>
+}
+
+<table mat-table [dataSource]="transactions()">
+  <ng-container matColumnDef="transactionDate">
+    <th mat-header-cell *matHeaderCellDef>Fecha</th>
+    <td mat-cell *matCellDef="let transaction">{{ transaction.transactionDate | date: 'dd/MM/yyyy HH:mm' }}</td>
+  </ng-container>
+
+  <ng-container matColumnDef="product">
+    <th mat-header-cell *matHeaderCellDef>Producto</th>
+    <td mat-cell *matCellDef="let transaction">{{ productName(transaction.productId) }}</td>
+  </ng-container>
+
+  <ng-container matColumnDef="type">
+    <th mat-header-cell *matHeaderCellDef>Tipo</th>
+    <td mat-cell *matCellDef="let transaction">{{ typeLabel(transaction.type) }}</td>
+  </ng-container>
+
+  <ng-container matColumnDef="quantity">
+    <th mat-header-cell *matHeaderCellDef>Cantidad</th>
+    <td mat-cell *matCellDef="let transaction">{{ transaction.quantity }}</td>
+  </ng-container>
+
+  <ng-container matColumnDef="unitPrice">
+    <th mat-header-cell *matHeaderCellDef>Precio unitario</th>
+    <td mat-cell *matCellDef="let transaction">{{ transaction.unitPrice | currency }}</td>
+  </ng-container>
+
+  <ng-container matColumnDef="totalPrice">
+    <th mat-header-cell *matHeaderCellDef>Total</th>
+    <td mat-cell *matCellDef="let transaction">{{ transaction.totalPrice | currency }}</td>
+  </ng-container>
+
+  <ng-container matColumnDef="detail">
+    <th mat-header-cell *matHeaderCellDef>Detalle</th>
+    <td mat-cell *matCellDef="let transaction">{{ transaction.detail }}</td>
+  </ng-container>
+
+  <ng-container matColumnDef="actions">
+    <th mat-header-cell *matHeaderCellDef>Acciones</th>
+    <td mat-cell *matCellDef="let transaction">
+      <a mat-icon-button [routerLink]="['/transactions', transaction.id, 'edit']" matTooltip="Editar">
+        <mat-icon>edit</mat-icon>
+      </a>
+      <button mat-icon-button (click)="delete(transaction)" matTooltip="Eliminar">
+        <mat-icon>delete</mat-icon>
+      </button>
+    </td>
+  </ng-container>
+
+  <tr mat-header-row *matHeaderRowDef="columns()"></tr>
+  <tr mat-row *matRowDef="let row; columns: columns()"></tr>
+  <tr class="mat-mdc-row" *matNoDataRow>
+    <td class="no-data" [attr.colspan]="columns().length">No se encontraron transacciones.</td>
+  </tr>
+</table>
+
+<mat-paginator
+  [length]="totalCount()"
+  [pageIndex]="pageIndex()"
+  [pageSize]="pageSize()"
+  [pageSizeOptions]="[5, 10, 20]"
+  (page)="changePage($event)"
+  showFirstLastButtons
+/>
